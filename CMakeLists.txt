@@ -70,12 +70,25 @@ ENDIF()
 ########################################################################
 find_package(PkgConfig)
 find_package(LibUSB)
+#FIND_PATH(LIBUSB_INCLUDE_DIR libusb.h
+#    HINTS $ENV{LIBUSB_ROOT}
+#    PATHS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS}
+#    PATH_SUFFIXES include)
+#FIND_LIBRARY(LIBUSB_LIBRARY_DIRS NAMES usb-1.0
+#    HINTS $ENV{LIBUSB_ROOT}
+#    PATHS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS}
+#    PATH_SUFFIXES lib)
+set(LIBUSB_INCLUDE_DIR "/opt/arm/include/libusb-1.0")
+set(LIBUSB_LIBRARY_DIRS "/opt/arm/lib")
+link_directories(${LIBUSB_LIBRARY_DIRS})
+set(LIBUSB_LIBRARIES "usb-1.0")
+
 set(THREADS_USE_PTHREADS_WIN32 true)
 find_package(Threads)
 
-if(NOT LIBUSB_FOUND)
-    message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
-endif()
+#if(NOT LIBUSB_FOUND)
+#    message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
+#endif()
 if(NOT THREADS_FOUND)
     message(FATAL_ERROR "pthreads(-win32) required to compile rtl-sdr")
 endif()
@@ -87,10 +100,6 @@ include_directories(
     ${LIBUSB_INCLUDE_DIR}
     ${THREADS_PTHREADS_INCLUDE_DIR}
 )
-
-#link_directories(
-#    ...
-#)
 
 # Set component parameters
 #set(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)

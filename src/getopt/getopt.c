@@ -38,6 +38,10 @@
 # endif
 #endif
 
+#ifdef _WIN32
+#  define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 
 /* Comment out all this code if we are using the GNU C Library, and are not

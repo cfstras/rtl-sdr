@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifdef __APPLE__
+#ifdef __MACH__
 #include <sys/time.h>
 #else
 #include <time.h>
@@ -144,8 +144,8 @@ static int ppm_gettime(struct timespec *ts)
 	struct timeval tv;
 
 	rv = gettimeofday(&tv, NULL);
-	ts->tv_sec = tv.tv_sec;
-	ts->tv_nsec = tv.tv_usec * 1000;
+	tg->tv_sec = tv.tv_sec;
+	tg->tv_nsec = tv.tv_usec * 1000;
 #endif
 	return rv;
 }

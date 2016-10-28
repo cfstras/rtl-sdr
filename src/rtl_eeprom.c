@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#ifdef _WIN32
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
