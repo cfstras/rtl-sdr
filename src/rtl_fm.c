@@ -43,6 +43,10 @@
  *       fix oversampling
  */
 
+#ifdef _WIN32
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -1093,9 +1097,10 @@ static void *output_thread_fn(void *arg)
 		if (!s->padded) {
 			safe_cond_wait(&b0->ready, &b0->ready_m);
 			pthread_rwlock_rdlock(&b0->rw);
-			fwrite(b0->buf, 2, b0->len, s->file);
+			size_t written = fwrite(b0->buf, 2, b0->len, s->file);
 			unmark_shared_buffer(b0->buf);
 			pthread_rwlock_unlock(&b0->rw);
+            //fprintf(stderr, "written samples: %zu\n", written);
 			continue;
 		}
 
@@ -1108,10 +1113,11 @@ static void *output_thread_fn(void *arg)
 		pthread_mutex_unlock(&b0->trycond_m);
 		if (r == 0) {
 			pthread_rwlock_rdlock(&b0->rw);
-			fwrite(b0->buf, 2, b0->len, s->file);
+			size_t written = fwrite(b0->buf, 2, b0->len, s->file);
 			unmark_shared_buffer(b0->buf);
 			samples += (int64_t)b0->len;
 			pthread_rwlock_unlock(&b0->rw);
+            //fprintf(stderr, "written samples: %zu\n", written);
 			continue;
 		}
 #ifdef _WIN32
@@ -1127,6 +1133,7 @@ static void *output_thread_fn(void *arg)
 #endif
 		if (samples_now < samples) {
 			continue;}
+        fprintf(stderr, "padding samples: %zu\n", samples_now - samples);
 		for (i=samples; i<samples_now; i++) {
 			fputc(0, s->file);
 			fputc(0, s->file);
@@ -1478,6 +1485,7 @@ int generate_header(struct demod_state *d, struct output_state *o)
 
 int main(int argc, char **argv)
 {
+    setbuf(stderr, NULL);
 #ifndef _WIN32
 	struct sigaction sigact;
 #endif
@@ -1629,6 +1637,49 @@ int main(int argc, char **argv)
 	}
 
 	ACTUAL_BUF_LENGTH = lcm_post[demod.post_downsample] * DEFAULT_BUF_LENGTH;
+
+	//DEBUG: output vars
+#ifdef _DEBUG
+	fprintf(stderr, "demod.custom_atan = %d\n", demod.custom_atan);
+	char *mode_demod="";
+	if (demod.mode_demod == &fm_demod) mode_demod = "fm";
+	if (demod.mode_demod == &raw_demod) mode_demod = "raw";
+	if (demod.mode_demod == &usb_demod) mode_demod = "usb";
+	if (demod.mode_demod == &lsb_demod) mode_demod = "lsb";
+	if (demod.mode_demod == &am_demod) mode_demod = "am";
+	fprintf(stderr, "demod.mode_demod = %s\n", mode_demod);
+	fprintf(stderr, "controller.wb_mode = %d\n", controller.wb_mode);
+
+	fprintf(stderr, "demod.rate_in = %d\n", demod.rate_in);
+	fprintf(stderr, "demod.rate_out = %d\n", demod.rate_out);
+	fprintf(stderr, "demod.rate_out2 = %d\n", demod.rate_out2);
+	fprintf(stderr, "output.rate = %d\n", output.rate);
+	fprintf(stderr, "demod.deemph = %d\n", demod.deemph);
+	fprintf(stderr, "demod.squelch_level = %d\n", demod.squelch_level);
+	fprintf(stderr, "demod.downsample_passes = %d\n", demod.downsample_passes);
+	fprintf(stderr, "demod.comp_fir_size = %d\n", demod.comp_fir_size);
+	fprintf(stderr, "dongle.offset_tuning = %d\n", dongle.offset_tuning);
+	fprintf(stderr, "dongle.direct_sampling = %d\n", dongle.direct_sampling);
+	fprintf(stderr, "dongle.pre_rotate = %d\n", dongle.pre_rotate);
+	fprintf(stderr, "output.wav_format = %d\n", output.wav_format);
+	fprintf(stderr, "output.lrmix = %d\n", output.lrmix);
+	fprintf(stderr, "output.padded = %d\n", output.padded);
+	fprintf(stderr, "demod.agc_mode = %d\n", demod.agc_mode);
+	fprintf(stderr, "demod.deemph = %d\n", demod.deemph);
+	fprintf(stderr, "controller.edge = %d\n", controller.edge);
+	fprintf(stderr, "demod.dc_block = %d\n", demod.dc_block);
+	fprintf(stderr, "demod.conseq_squelch = %d\n", demod.conseq_squelch);
+	fprintf(stderr, "demod.squelch_level = %d\n", demod.squelch_level);
+	fprintf(stderr, "demod.terminate_on_squelch = %d\n", demod.terminate_on_squelch);
+	fprintf(stderr, "dongle.gain = %d\n", dongle.gain);
+
+	for (int i = 0; i < controller.freq_len; i++) {
+		fprintf(stderr, "freq %d: %.3f\n", i, controller.freqs[i]);
+	}
+	//DEBUG: output vars
+#endif
+
+
 
 	if (!dev_given) {
 		dongle.dev_index = verbose_device_search("0");
