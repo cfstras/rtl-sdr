@@ -19,19 +19,24 @@
  * todo: use strtol for more flexible int parsing
  * */
 
+#ifdef _WIN32
+#  define _CRT_SECURE_NO_DEPRECATE
+#  define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #ifndef _WIN32
-#include <unistd.h>
+#  include <unistd.h>
 #else
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#include <process.h>
-#define _USE_MATH_DEFINES
+#  include <windows.h>
+#  include <fcntl.h>
+#  include <io.h>
+#  include <process.h>
+#  define _USE_MATH_DEFINES
 #endif
 
 #include <math.h>
@@ -388,7 +393,7 @@ void executeInBackground( char * file, char * args, char * searchStr[], char * r
 		}
 	}
 
-	spawnvp(P_NOWAIT, file, argv);
+	_spawnvp(P_NOWAIT, file, argv);
 }
 
 #endif
